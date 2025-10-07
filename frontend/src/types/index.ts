@@ -1,0 +1,35 @@
+// 👤 Kullanıcı tipi
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
+  avatar?: string;
+}
+
+// 🔐 Auth Context tipi (global state)
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+// 📦 Backend'den gelen cevap tipleri
+export interface AuthResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    user: User;
+    token: string;
+  };
+}
+
+export interface UserResponse {
+  success: boolean;
+  data?: {
+    user: User;
+  };
+}
