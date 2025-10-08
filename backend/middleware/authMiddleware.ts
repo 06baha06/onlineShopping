@@ -53,9 +53,10 @@ export const protect = async (
       return;
     }
 
-    // 5️⃣ Kullanıcıyı req.user'a ekle (sonraki middleware'ler ve controller'lar için)
-    req.user = {
+    // 5️⃣ Kullanıcıyı req.user'a ekle (sonraki middleware'ler için)
+    (req as any).user = {
       id: String(user._id),
+      name: user.name,      // 🔥 YENİ: İsim eklendi
       role: user.role
     };
 
@@ -71,6 +72,23 @@ export const protect = async (
   }
 };
 
+// 🏪 SELLER CHECK - Sadece seller kullanıcılar erişebilir
+export const seller = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  // protect middleware'den sonra çalışmalı (req.user dolu olmalı)
+  if ((req as any).user && (req as any).user.role === 'seller') {
+    next(); // Seller ise devam et
+  } else {
+    res.status(403).json({
+      success: false,
+      message: 'Bu işlem için satıcı yetkisi gereklidir'
+    });
+  }
+};
+
 // 👮 ADMIN CHECK - Sadece admin kullanıcılar erişebilir
 export const admin = (
   req: Request,
@@ -78,7 +96,7 @@ export const admin = (
   next: NextFunction
 ): void => {
   // protect middleware'den sonra çalışmalı (req.user dolu olmalı)
-  if (req.user && req.user.role === 'admin') {
+  if ((req as any).user && (req as any).user.role === 'admin') {
     next(); // Admin ise devam et
   } else {
     res.status(403).json({

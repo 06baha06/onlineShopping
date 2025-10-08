@@ -22,7 +22,7 @@ const generateToken = (id: string): string => {
 // 📝 REGISTER - Yeni kullanıcı kaydet
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body; 
 
     // 1️⃣ Alanların dolu olup olmadığını kontrol et
     if (!name || !email || !password) {
@@ -43,17 +43,22 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 3️⃣ Yeni kullanıcı oluştur
+    // 3️⃣ Role kontrolü (güvenlik)
+    const allowedRoles = ['buyer', 'seller', 'admin'];
+    const userRole = role && allowedRoles.includes(role) ? role : 'buyer';
+
+    // 4️⃣ Yeni kullanıcı oluştur
     const user = await User.create({
       name,
       email,
-      password // Şifre otomatik hashlenecek (User model'deki pre-save middleware sayesinde)
+      password, // Şifre otomatik hashlenecek
+      role: userRole  // 🔥 YENİ: role eklendi
     });
 
-    // 4️⃣ Token oluştur
+    // 5️⃣ Token oluştur
     const token = generateToken(String(user._id));
 
-    // 5️⃣ Başarılı yanıt döndür
+    // 6️⃣ Başarılı yanıt döndür
     res.status(201).json({
       success: true,
       message: 'Kayıt başarılı',
@@ -62,7 +67,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
           _id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role,
+          role: user.role,  
           avatar: user.avatar
         },
         token
@@ -114,7 +119,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 4️⃣ Token oluştur (TypeScript tip hatası düzeltildi)
+    // 4️⃣ Token oluştur
     const token = generateToken(String(user._id));
 
     // 5️⃣ Başarılı yanıt döndür

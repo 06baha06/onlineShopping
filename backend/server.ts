@@ -5,6 +5,7 @@ import connectDB from './config/db';
 
 // 🔗 Routes import
 import authRoutes from './routes/authRoutes';
+import productRoutes from './routes/productRoutes';  // 🔥 YENİ
 
 // .env dosyasını yükle
 dotenv.config();
@@ -30,7 +31,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // 🛣️ API ROUTES
-app.use('/api/auth', authRoutes);  // ✅ Auth routes'u bağladık
+app.use('/api/auth', authRoutes);          // Auth routes
+app.use('/api/products', productRoutes);   // 🔥 Product routes
 
 // 404 - Route bulunamadı
 app.use((req: Request, res: Response) => {
@@ -56,4 +58,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server ${PORT} portunda çalışıyor (TypeScript)`);
   console.log(`📍 http://localhost:${PORT}`);
   console.log(`🔐 Auth Routes: http://localhost:${PORT}/api/auth`);
+  console.log(`📦 Product Routes: http://localhost:${PORT}/api/products`);  // 🔥 YENİ
 });
