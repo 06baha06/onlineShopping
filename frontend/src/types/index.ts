@@ -33,3 +33,26 @@ export interface UserResponse {
     user: User;
   };
 }
+
+export interface IProduct {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  stock: number;
+  image: string;
+  seller: string;          // User ID
+  sellerName: string;      // Satıcının adı
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Backend'den gelen product response
+export interface ProductResponse {
+  success: boolean;
+  message?: string;
+  data?: IProduct | IProduct[];
+  count?: number;
+}
