@@ -1,3 +1,5 @@
+// frontend/src/pages/Login.tsx
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -17,7 +19,7 @@ const Login: React.FC = () => {
 
     try {
       await login(email, password);
-      navigate('/home');
+      navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Giriş başarısız');
     } finally {
@@ -28,6 +30,15 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="max-w-md w-full">
+        {/* 👇 YENİ: Geri Butonu */}
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors group"
+        >
+          <span className="transform group-hover:-translate-x-1 transition-transform">←</span>
+          Ana Sayfaya Dön
+        </button>
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">

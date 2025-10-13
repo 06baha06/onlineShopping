@@ -41,8 +41,8 @@ const productSchema = new Schema<IProduct>(
         'Elektronik',
         'Giyim',
         'Ev & Yaşam',
-        'Kitap',
-        'Spor',
+        'Kitap & Hobi',
+        'Spor & Outdoor',
         'Oyuncak',
         'Kozmetik',
         'Diğer'

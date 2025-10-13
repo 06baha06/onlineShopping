@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// frontend/src/App.tsx
+
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import { AuthProvider } from './context/AuthContextProvider';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -9,36 +11,20 @@ import Home from './pages/Home';
 import Products from './pages/Products';
 import Dashboard from './pages/seller/Dashboard';
 import AddProduct from './pages/seller/AddProduct';
-import EditProduct from './pages/seller/EditProduct';  // 👈 YENİ
+import EditProduct from './pages/seller/EditProduct';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
+          {/* 🌍 PUBLIC ROUTES - Herkes erişebilir */}
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/home"
-            element={
-              <PrivateRoute>
-                <Home />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/products"
-            element={
-              <PrivateRoute>
-                <Products />
-              </PrivateRoute>
-            }
-          />
-
+          {/* 🔒 PROTECTED ROUTES - Giriş gerekli */}
           {/* Seller Routes */}
           <Route
             path="/seller/dashboard"
@@ -66,9 +52,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Default Route */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
 
           {/* 404 */}
           <Route

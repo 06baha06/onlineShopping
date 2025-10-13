@@ -1,14 +1,18 @@
+// frontend/src/pages/seller/Dashboard.tsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import * as productService from '../../services/productService';
 import type { IProduct } from '../../types';
+import Layout from '../../components/layout/Layout';
+import Container from '../../components/common/Container';
 
 const Dashboard: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user, token, logout } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
 
   // Kendi ürünlerini yükle
@@ -47,47 +51,19 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>Ürünleriniz yükleniyor...</div>
-      </div>
+      <Layout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-lg text-gray-600">Ürünleriniz yükleniyor...</div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white shadow-md p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">🏪 Satıcı Paneli</h1>
-          
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/home')} className="text-gray-700 hover:text-blue-600">
-              Ana Sayfa
-            </button>
-            <button onClick={() => navigate('/products')} className="text-gray-700 hover:text-blue-600">
-              Ürünler
-            </button>
-            <button onClick={() => navigate('/seller/dashboard')} className="text-blue-600 font-semibold">
-              Panelim
-            </button>
-            
-            <span className="text-sm">{user?.name}</span>
-            <button onClick={handleLogout} className="btn-danger text-sm">
-              Çıkış
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Ana İçerik */}
-      <div className="max-w-7xl mx-auto p-8">
+    <Layout>
+      <Container className="py-8">
         {/* Başlık ve Ürün Ekle Butonu */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Ürünlerim</h2>
@@ -138,7 +114,7 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="card">
+          <div className="card overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -199,8 +175,8 @@ const Dashboard: React.FC = () => {
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </Container>
+    </Layout>
   );
 };
 

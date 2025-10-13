@@ -1,15 +1,37 @@
+// frontend/src/pages/Products.tsx
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import * as productService from '../services/productService';
 import type { IProduct } from '../types';
+import Layout from '../components/layout/Layout';
+import Container from '../components/common/Container';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user, logout } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');  // 👈 YENİ: Arama sorgusu
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  const selectedCategory = searchParams.get('category') 
+    ? decodeURIComponent(searchParams.get('category')!)
+    : null;
+
+  // Kategoriler
+  const categories = [
+    'Tümü',
+    'Elektronik',
+    'Giyim',
+    'Ev & Yaşam',
+    'Spor & Outdoor',
+    'Kitap & Hobi',
+    'Kozmetik',
+    'Oyuncak',
+    'Diğer'
+  ];
 
   // Ürünleri yükle
   useEffect(() => {
@@ -19,6 +41,7 @@ const Products: React.FC = () => {
       
       if (response.success && Array.isArray(response.data)) {
         setProducts(response.data);
+        setFilteredProducts(response.data);
       } else {
         setError(response.message || 'Ürünler yüklenemedi');
       }
@@ -28,55 +51,106 @@ const Products: React.FC = () => {
     fetchProducts();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  // 👇 YENİ: Kategori VE Arama ile filtrele
+  useEffect(() => {
+    let filtered = products;
+
+    // 1️⃣ Kategori filtresi
+    if (selectedCategory && selectedCategory !== 'Tümü') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+
+    // 2️⃣ Arama filtresi
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.sellerName.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredProducts(filtered);
+  }, [selectedCategory, searchQuery, products]);
+
+  // Kategori değiştir fonksiyonu
+  const handleCategoryChange = (category: string) => {
+    if (category === 'Tümü') {
+      navigate('/products');
+    } else {
+      navigate(`/products?category=${encodeURIComponent(category)}`);
+    }
+  };
+
+  // 👇 YENİ: Arama temizle
+  const handleClearSearch = () => {
+    setSearchQuery('');
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>Ürünler yükleniyor...</div>
-      </div>
+      <Layout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-lg text-gray-600">Ürünler yükleniyor...</div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white shadow-md p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">🛍️ E-Commerce</h1>
+    <Layout>
+      <Container className="py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold">Tüm Ürünler</h2>
           
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/home')} className="text-gray-700 hover:text-blue-600">
-              Ana Sayfa
-            </button>
-            <button onClick={() => navigate('/products')} className="text-blue-600 font-semibold">
-              Ürünler
-            </button>
-            
-            {user?.role === 'seller' && (
-              <button onClick={() => navigate('/seller/dashboard')} className="text-gray-700 hover:text-blue-600">
-                Satıcı Paneli
+          {/* 👇 YENİ: Sonuç sayısı */}
+          <div className="text-gray-600">
+            <span className="font-semibold">{filteredProducts.length}</span> ürün bulundu
+          </div>
+        </div>
+
+        {/* 👇 YENİ: Arama Kutusu */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Ürün ara... (isim, açıklama, satıcı)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 pl-12 pr-12 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none transition"
+            />
+            {/* Arama ikonu */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              🔍
+            </div>
+            {/* Temizle butonu */}
+            {searchQuery && (
+              <button
+                onClick={handleClearSearch}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ✕
               </button>
-            )}
-            
-            {user && (
-              <>
-                <span className="text-sm">{user.name}</span>
-                <button onClick={handleLogout} className="btn-danger text-sm">
-                  Çıkış
-                </button>
-              </>
             )}
           </div>
         </div>
-      </nav>
 
-      {/* Ana İçerik */}
-      <div className="max-w-7xl mx-auto p-8">
-        <h2 className="text-3xl font-bold mb-6">Tüm Ürünler</h2>
+        {/* Kategori Filtreleri */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                (selectedCategory === category || (!selectedCategory && category === 'Tümü'))
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
         {/* Hata Mesajı */}
         {error && (
@@ -85,14 +159,39 @@ const Products: React.FC = () => {
           </div>
         )}
 
+        {/* 👇 YENİ: Arama sonucu mesajı */}
+        {searchQuery && (
+          <div className="mb-4 text-gray-600">
+            <span className="font-semibold">"{searchQuery}"</span> için sonuçlar
+            {selectedCategory && selectedCategory !== 'Tümü' && (
+              <span> - <span className="font-semibold">{selectedCategory}</span> kategorisinde</span>
+            )}
+          </div>
+        )}
+
         {/* Ürün Listesi */}
-        {products.length === 0 ? (
-          <div className="card text-center">
-            <p className="text-gray-600">Henüz ürün yok.</p>
+        {filteredProducts.length === 0 ? (
+          <div className="card text-center py-12">
+            <div className="text-6xl mb-4">😔</div>
+            <p className="text-gray-600 text-lg">
+              {searchQuery 
+                ? `"${searchQuery}" için sonuç bulunamadı.` 
+                : selectedCategory 
+                  ? `"${selectedCategory}" kategorisinde ürün bulunamadı.`
+                  : 'Henüz ürün yok.'}
+            </p>
+            {searchQuery && (
+              <button 
+                onClick={handleClearSearch}
+                className="btn-primary mt-4"
+              >
+                Aramayı Temizle
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div key={product._id} className="card hover:shadow-xl transition-shadow">
                 {/* Ürün Görseli */}
                 <div className="bg-gray-200 h-48 rounded-lg mb-4 flex items-center justify-center">
@@ -135,8 +234,8 @@ const Products: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </Container>
+    </Layout>
   );
 };
 
