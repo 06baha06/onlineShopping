@@ -14,15 +14,14 @@ const Home: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Öne çıkan ürünleri yükle (son 6 ürün)
+  // Öne çıkan ürünleri yükle (son 8 ürün)
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       const response = await productService.getAllProducts();
       
       if (response.success && Array.isArray(response.data)) {
-        // Son eklenen 6 ürünü al
-        const latest = response.data.slice(0, 6);
+        const latest = response.data.slice(0, 8);
         setFeaturedProducts(latest);
       }
       setLoading(false);
@@ -31,48 +30,82 @@ const Home: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // Kategoriler
+  // Kategoriler - Sadece isimler
   const categories = [
-    { name: 'Elektronik', icon: '📱', color: 'bg-blue-100 text-blue-600' },
-    { name: 'Giyim', icon: '👕', color: 'bg-purple-100 text-purple-600' },
-    { name: 'Ev & Yaşam', icon: '🏠', color: 'bg-green-100 text-green-600' },
-    { name: 'Spor & Outdoor', icon: '⚽', color: 'bg-orange-100 text-orange-600' },
-    { name: 'Kitap & Hobi', icon: '📚', color: 'bg-pink-100 text-pink-600' },
-    { name: 'Kozmetik', icon: '💄', color: 'bg-red-100 text-red-600' },
+    'Elektronik',
+    'Moda',
+    'Ev & Yaşam',
+    'Spor, Outdoor',
+    'Kozmetik',
+    'Kitap & Hobi',
+    'Oyuncak',
+    'Diğer'
   ];
 
   return (
     <Layout>
-      {/* HERO SECTION */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <Container className="py-20">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl font-bold mb-4">
-              {user ? `Hoş geldin, ${user.name}! 👋` : 'En İyi Ürünler Burada! 🛍️'}
+      {/* KATEGORİ ÇUBUĞU - İnce ve Minimal */}
+      <div className="bg-white border-b shadow-sm">
+        <Container>
+          <div className="flex items-center gap-6 overflow-x-auto py-2.5 scrollbar-hide">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => navigate(`/products?category=${encodeURIComponent(category)}`)}
+                className="flex-shrink-0 text-sm text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap transition"
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </Container>
+      </div>
+
+      {/* HERO SECTION - Daha Kompakt */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 text-white overflow-hidden">
+        {/* Dekoratif elementler */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -ml-32 -mb-32"></div>
+        
+        <Container className="relative py-12 md:py-16">
+          <div className="max-w-2xl">
+            {/* Greeting */}
+            {user && (
+              <div className="inline-block mb-3 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm">
+                Merhaba, <span className="font-semibold">{user.name}</span> 👋
+              </div>
+            )}
+            
+            {/* Ana Başlık */}
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+              {user ? 'Alışverişe Devam Et' : 'Aradığın Her Şey Burada'}
             </h1>
-            <p className="text-xl mb-8 text-blue-100">
-              Binlerce ürün arasından ihtiyacınız olanı bulun. Güvenli alışverişin adresi.
+            
+            {/* Alt Başlık */}
+            <p className="text-base md:text-lg mb-6 text-blue-100 leading-relaxed">
+              Binlerce üründen oluşan koleksiyonumuzu keşfet. Güvenli ödeme, hızlı teslimat.
             </p>
             
-            <div className="flex gap-4">
+            {/* CTA Butonları */}
+            <div className="flex flex-wrap gap-3">
               <button 
                 onClick={() => navigate('/products')}
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+                className="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                Ürünlere Göz At
+                Ürünleri Keşfet
               </button>
               
               {user?.role === 'seller' ? (
                 <button 
                   onClick={() => navigate('/seller/dashboard')}
-                  className="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-400 transition"
+                  className="px-6 py-3 bg-blue-500/20 backdrop-blur-sm text-white border-2 border-white/30 rounded-xl font-semibold hover:bg-blue-500/30 transition-all"
                 >
-                  Satıcı Paneline Git
+                  Satıcı Paneli →
                 </button>
               ) : !user && (
                 <button 
                   onClick={() => navigate('/register')}
-                  className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition"
+                  className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all"
                 >
                   Satıcı Ol
                 </button>
@@ -82,89 +115,105 @@ const Home: React.FC = () => {
         </Container>
       </div>
 
-      {/* KATEGORİLER */}
-      <Container className="py-12">
-        <h2 className="text-3xl font-bold mb-6">Kategoriler</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => navigate('/products')}
-              className={`${category.color} p-6 rounded-xl hover:shadow-lg transition text-center`}
-            >
-              <div className="text-4xl mb-2">{category.icon}</div>
-              <div className="font-semibold">{category.name}</div>
-            </button>
-          ))}
-        </div>
-      </Container>
-
       {/* ÖNE ÇIKAN ÜRÜNLER */}
-      <div className="bg-gray-50 py-12">
+      <div className="bg-gray-50 py-10 md:py-12">
         <Container>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold">Öne Çıkan Ürünler</h2>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Yeni Eklenenler</h2>
+              <p className="text-gray-600 mt-1 text-sm">En son eklenen ürünlere göz at</p>
+            </div>
             <button 
               onClick={() => navigate('/products')}
-              className="text-blue-600 hover:text-blue-700 font-semibold"
+              className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2 group text-sm"
             >
-              Tümünü Gör →
+              Tümünü Gör 
+              <span className="transform group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="text-gray-600">Ürünler yükleniyor...</div>
+              <div className="inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-600 mt-4">Ürünler yükleniyor...</p>
             </div>
           ) : featuredProducts.length === 0 ? (
-            <div className="card text-center py-12">
-              <p className="text-gray-600 mb-4">Henüz ürün yok.</p>
+            <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+              <div className="text-6xl mb-4">📦</div>
+              <p className="text-gray-600 text-lg mb-6">Henüz ürün eklenmemiş.</p>
               {user?.role === 'seller' && (
                 <button 
                   onClick={() => navigate('/seller/add-product')}
-                  className="btn-primary"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition"
                 >
-                  İlk Ürünü Sen Ekle!
+                  İlk Ürünü Ekle
                 </button>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {featuredProducts.map((product) => (
-                <div key={product._id} className="card hover:shadow-xl transition-shadow">
+                <div 
+                  key={product._id} 
+                  className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1 group cursor-pointer"
+                  onClick={() => navigate('/products')}
+                >
                   {/* Ürün Görseli */}
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 flex items-center justify-center">
-                    <span className="text-6xl">📦</span>
+                  <div className="relative bg-gray-100 aspect-square flex items-center justify-center overflow-hidden">
+                    <div className="text-5xl md:text-7xl group-hover:scale-110 transition-transform">📦</div>
+                    {/* Stok Badge */}
+                    {product.stock < 10 && product.stock > 0 && (
+                      <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                        Son {product.stock}
+                      </div>
+                    )}
+                    {product.stock === 0 && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                        Tükendi
+                      </div>
+                    )}
                   </div>
 
                   {/* Ürün Bilgileri */}
-                  <h3 className="text-xl font-bold mb-2 line-clamp-1">{product.name}</h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {product.description}
-                  </p>
+                  <div className="p-3 md:p-4">
+                    {/* Kategori Badge */}
+                    <div className="mb-2">
+                      <span className="inline-block bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded font-medium">
+                        {product.category}
+                      </span>
+                    </div>
 
-                  {/* Fiyat */}
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-2xl font-bold text-blue-600">
-                      ₺{product.price}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      Stok: {product.stock}
-                    </span>
+                    {/* Ürün İsmi */}
+                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 text-sm md:text-base group-hover:text-blue-600 transition">
+                      {product.name}
+                    </h3>
+
+                    {/* Açıklama */}
+                    <p className="text-gray-600 text-xs mb-2 line-clamp-1 hidden md:block">
+                      {product.description}
+                    </p>
+
+                    {/* Fiyat */}
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="text-lg md:text-xl font-bold text-gray-900">
+                        ₺{product.price}
+                      </div>
+                      <div className="text-xs text-gray-500 hidden md:block">
+                        {product.sellerName}
+                      </div>
+                    </div>
+
+                    {/* Görüntüle Butonu */}
+                    <button 
+                      className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/products');
+                      }}
+                    >
+                      İncele
+                    </button>
                   </div>
-
-                  {/* Satıcı */}
-                  <div className="text-sm text-gray-500 mb-4">
-                    <span className="font-semibold">{product.sellerName}</span>
-                  </div>
-
-                  {/* Buton */}
-                  <button 
-                    onClick={() => navigate('/products')}
-                    className="btn-primary w-full"
-                  >
-                    İncele
-                  </button>
                 </div>
               ))}
             </div>
@@ -172,25 +221,62 @@ const Home: React.FC = () => {
         </Container>
       </div>
 
-      {/* CTA (Call to Action) */}
+      {/* NEDEN BİZ? - Daha Kompakt */}
+      <Container className="py-10 md:py-12">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="text-center">
+            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">🚚</span>
+            </div>
+            <h3 className="font-semibold text-base mb-1">Hızlı Teslimat</h3>
+            <p className="text-gray-600 text-sm">
+              Siparişleriniz güvenle elinize ulaşıyor
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">🔒</span>
+            </div>
+            <h3 className="font-semibold text-base mb-1">Güvenli Ödeme</h3>
+            <p className="text-gray-600 text-sm">
+              Tüm ödemeleriniz SSL ile korunuyor
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">💬</span>
+            </div>
+            <h3 className="font-semibold text-base mb-1">7/24 Destek</h3>
+            <p className="text-gray-600 text-sm">
+              Müşteri hizmetlerimiz her zaman yanınızda
+            </p>
+          </div>
+        </div>
+      </Container>
+
+      {/* CTA - Giriş Yapmamışlar İçin */}
       {!user && (
-        <div className="bg-blue-600 text-white py-16">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 md:py-14">
           <Container>
             <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-4xl font-bold mb-4">Hemen Başla!</h2>
-              <p className="text-xl mb-8 text-blue-100">
-                Ücretsiz hesap oluştur ve binlerce ürüne ulaş.
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                Hemen Başla!
+              </h2>
+              <p className="text-base md:text-lg mb-6 text-blue-100">
+                Ücretsiz hesap oluştur ve alışverişe başla.
               </p>
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-wrap gap-3 justify-center">
                 <button 
                   onClick={() => navigate('/register')}
-                  className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+                  className="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all shadow-lg"
                 >
                   Kayıt Ol
                 </button>
                 <button 
                   onClick={() => navigate('/login')}
-                  className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition"
+                  className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all"
                 >
                   Giriş Yap
                 </button>
